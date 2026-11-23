@@ -136,6 +136,12 @@ footer{margin-top:28px;font-size:13px;color:var(--muted)}
         <label>Repairs set-aside (% of rent)<input type="number" id="maint" value="8" step="1"></label>
         <label>Manager (% of rent, 0 if you do it)<input type="number" id="mgmt" value="0" step="1"></label>
       </div>
+      <h3>Over time</h3>
+      <div class="grid">
+        <label>Years you keep it, then replace it<input type="number" id="hold" value="10" step="1" min="1" max="30"></label>
+        <label>What it's worth at the end (negative if you pay to haul it off)<input type="number" id="endVal" value="0" step="500"></label>
+      </div>
+      <p class="note">The home loses value, but rent pays it back. "Whole life" below adds up every year's profit (with the rent and lot-rent increases from tab 2) plus what the home is worth at the end.</p>
     </div>
 
     <div id="sellFields" class="hidden">
@@ -257,7 +263,7 @@ const store = {
   get(k, f){ try{ const v = localStorage.getItem("ps_"+k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
   set(k, v){ try{ localStorage.setItem("ps_"+k, JSON.stringify(v)); }catch(e){} }
 };
-const FIELDS = ["price","repairs","setup","closing","lot","utils","ins","tax","rent","vac","maint","mgmt","sale","down","rate","years","dflt","keep","lotG","rentG","yrs","start","save","reinv","sYears"];
+const FIELDS = ["price","repairs","setup","closing","lot","utils","ins","tax","rent","vac","maint","mgmt","hold","endVal","sale","down","rate","years","dflt","keep","lotG","rentG","yrs","start","save","reinv","sYears"];
 let mode = "rent";
 
 /* ---------- inputs ---------- */
@@ -299,6 +305,14 @@ function calcDeal(d){
     return { buy, cash, flow, pmt, total, profit: total - buy, mode };
   }
 }
+function lifeProfit(d){
+  const n = Math.min(30, Math.max(1, Math.round(d.hold)));
+  let sum = 0;
+  for (let y = 1; y <= n; y++){
+    sum += rentFlow(d, d.rent*Math.pow(1 + d.rentG/100, y-1), d.lot*Math.pow(1 + d.lotG/100, y-1))*12;
+  }
+  return { years: n, rentProfit: sum, back: sum + d.endVal };
+}
 function verdictFor(r){
   const coc = r.cash > 0 ? r.flow*12/r.cash*100 : Infinity;
   if (r.flow <= 0) return {cls:"bad", icon:"✕", text:"Loses money", why:"costs are higher than what comes in"};
@@ -329,6 +343,12 @@ function renderDeal(){
       ["Highest lot rent you can survive", money(r.maxLot)],
       ["Lot rent as % of your rent", pct(d.lot/Math.max(1,d.rent)*100) + (d.lot/Math.max(1,d.rent) > 0.45 ? "  (high)" : "")]
     ];
+    const L = lifeProfit(d);
+    rows.push(
+      [`Whole life: rent profit over ${L.years} years`, money(L.rentProfit)],
+      ["Whole life: plus end value, minus cash in", money(L.back - r.cash)],
+      ["Whole life: you get back", r.cash > 0 ? (L.back/r.cash).toFixed(1) + "× your cash" : "–"]
+    );
   } else {
     rows = [
       ["Buyer's monthly payment", money(r.pmt)],
@@ -379,11 +399,13 @@ function renderStress(d){
 function renderScale(d, r){
   const years = Math.min(30, Math.max(1, Math.round(d.sYears)));
   const cost = r.cash, flow = r.flow;
-  let pool = d.start, homes = 0, first = null;
-  const pts = [];
+  let pool = d.start, homes = 0, first = null, retired = 0;
+  const pts = [], bought = [];
   const canBuy = cost > 0 && flow > 0;
+  const life = mode === "rent" ? Math.max(1, Math.round(d.hold))*12 : Infinity;
   for (let m = 1; m <= years*12; m++){
-    if (canBuy){ while (pool >= cost){ pool -= cost; homes++; if (first === null) first = m; } }
+    while (bought.length && m - bought[0] >= life){ bought.shift(); homes--; retired++; pool += d.endVal; }
+    if (canBuy){ while (pool >= cost){ pool -= cost; homes++; bought.push(m); if (first === null) first = m; } }
     pool += homes*flow*d.reinv/100 + d.save;
     if (m % 12 === 0) pts.push({label:"Year " + (m/12), short:"Y" + (m/12), y:homes, flow:homes*flow, pool});
   }
@@ -395,7 +417,7 @@ function renderScale(d, r){
   $("gHomes").textContent = homes;
   $("gFlow").textContent = money(homes*flow);
   $("gFirst").textContent = first ? (first <= 1 ? "Month 1" : "Month " + first) : "Not yet";
-  $("scaleNote").textContent = `Assumes every home costs ${money(cost)} and makes ${money(flow)}/month, with no loans. In real life you'll run out of good deals in one park, so spread across a few parks and towns.` + (mode === "sell" ? " In owner-finance mode payments stop when a home is paid off, so long-term income here is too high." : "");
+  $("scaleNote").textContent = `Assumes every home costs ${money(cost)} and makes ${money(flow)}/month, with no loans.` + (mode === "rent" ? ` Each home is retired after ${Math.round(d.hold)} years (worth ${money(d.endVal)}) and replaced from your cash${retired ? `: ${retired} replaced so far` : ""}.` : "") + ` In real life you'll run out of good deals in one park, so spread across a few parks and towns.` + (mode === "sell" ? " In owner-finance mode payments stop when a home is paid off, so long-term income here is too high." : "");
   drawChart($("scaleChart"), pts, "bar", v => Math.round(v).toString(), p => `<div>${p.label}</div><div><b>${p.y}</b> homes</div><div class="note">${money(p.flow)}/mo profit</div>`);
   $("scaleTable").innerHTML = `<tr><th>Year</th><th class="num">Homes</th><th class="num">Profit per month</th><th class="num">Cash waiting</th></tr>` +
     pts.map(p => `<tr><td>${p.label}</td><td class="num">${p.y}</td><td class="num">${money(p.flow)}</td><td class="num">${money(p.pool)}</td></tr>`).join("");
