@@ -13,6 +13,8 @@ Live site: https://cleetus.github.io/park-scout/
 - **Lot-rent stress test:** shows what happens to profit if the park raises lot rent faster than you can raise rent.
 - **Scale plan:** how many homes you could own over time if you reinvest profit.
 - **Saved deals:** stored in your browser, with CSV export and backup/import.
+- **RV + cabin park:** land + build-out cost, RV nightly and monthly sites, built-out cabins (e.g. Cotton State Barns buildings), operating costs, loan, NOI, value at a cap rate, and a cabin vs. mobile home comparison.
+- **Location score:** "will people stop here?" score out of 100 for a piece of land.
 - **Checklist:** questions for the park manager, home inspection items, scaling tips.
 
 It's one static `index.html` page with no build step and no tracking.

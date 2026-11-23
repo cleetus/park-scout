@@ -88,15 +88,17 @@ footer{margin-top:28px;font-size:13px;color:var(--muted)}
 <div class="wrap">
 <header>
   <h1>Park Scout</h1>
-  <p>Buy a used mobile home, rent the lot in someone else's park, then rent the home out or sell it on owner financing. Run the numbers before you buy.</p>
+  <p>Two plans: (1) buy used mobile homes in someone else's park and rent or owner-finance them, and (2) buy land in the right spot and build an RV + cabin park. Run the numbers before you buy.</p>
 </header>
 
 <nav role="tablist">
   <button role="tab" data-tab="deal" aria-selected="true">1. Deal</button>
   <button role="tab" data-tab="stress" aria-selected="false">2. Lot-rent stress test</button>
   <button role="tab" data-tab="scale" aria-selected="false">3. Scale plan</button>
-  <button role="tab" data-tab="deals" aria-selected="false">4. Saved deals</button>
-  <button role="tab" data-tab="check" aria-selected="false">5. Checklist</button>
+  <button role="tab" data-tab="park" aria-selected="false">4. RV + cabin park</button>
+  <button role="tab" data-tab="spot" aria-selected="false">5. Location score</button>
+  <button role="tab" data-tab="deals" aria-selected="false">6. Saved deals</button>
+  <button role="tab" data-tab="check" aria-selected="false">7. Checklist</button>
 </nav>
 
 <!-- DEAL -->
@@ -223,6 +225,103 @@ footer{margin-top:28px;font-size:13px;color:var(--muted)}
 </div>
 </section>
 
+<!-- RV + CABIN PARK -->
+<section data-panel="park" class="hidden">
+<div class="two">
+  <div class="card">
+    <h2>RV + cabin park</h2>
+    <p class="sub">You buy the land and build it out. The starting numbers are examples only, so put in real local quotes. Cabins are built-out portable buildings (for example from Cotton State Barns) set on a permanent foundation. They last far longer than a mobile home.</p>
+
+    <h3>Land and shared build-out</h3>
+    <div class="grid">
+      <label>Land price<input type="number" id="pLand" value="120000" step="5000"></label>
+      <label>Septic / sewer system<input type="number" id="pSewer" value="60000" step="5000"></label>
+      <label>Water (well or city tap)<input type="number" id="pWater" value="20000" step="1000"></label>
+      <label>Bathhouse + laundry<input type="number" id="pBath" value="90000" step="5000"></label>
+      <label>Office / camp store<input type="number" id="pOffice" value="30000" step="5000"></label>
+      <label>Permits, survey, engineering<input type="number" id="pPermit" value="25000" step="1000"></label>
+      <label>Sign / billboard<input type="number" id="pSign" value="10000" step="1000"></label>
+    </div>
+
+    <h3>RV sites</h3>
+    <div class="grid">
+      <label>Cost per RV site (road, gravel pad, 50-amp, water, sewer)<input type="number" id="pSiteCost" value="15000" step="500"></label>
+      <label>Overnight sites<input type="number" id="pRv" value="30" step="1"></label>
+      <label>Nightly rate<input type="number" id="pRvRate" value="50" step="1"></label>
+      <label>Overnight sites full (% of nights)<input type="number" id="pRvOcc" value="40" step="1"></label>
+      <label>Monthly sites (work crews, nurses, snowbirds)<input type="number" id="pMo" value="10" step="1"></label>
+      <label>Monthly rate<input type="number" id="pMoRate" value="650" step="25"></label>
+      <label>Monthly sites full (%)<input type="number" id="pMoOcc" value="80" step="1"></label>
+    </div>
+
+    <h3>Cabins</h3>
+    <div class="grid">
+      <label>Number of cabins<input type="number" id="pCab" value="6" step="1"></label>
+      <label>Cabin building (your quote)<input type="number" id="pCabShell" value="18000" step="500"></label>
+      <label>Finish-out (insulation, wiring, bath, kitchenette, HVAC, furniture, porch)<input type="number" id="pCabFinish" value="25000" step="500"></label>
+      <label>Pad, foundation, hookups per cabin<input type="number" id="pCabSite" value="8000" step="500"></label>
+      <label>Nightly rate<input type="number" id="pCabRate" value="110" step="5"></label>
+      <label>Cabins full (% of nights)<input type="number" id="pCabOcc" value="45" step="1"></label>
+      <label>Average stay (nights)<input type="number" id="pStay" value="2" step="0.5"></label>
+      <label>Cleaning per stay<input type="number" id="pClean" value="40" step="5"></label>
+      <label>How long a cabin lasts (years)<input type="number" id="pCabLife" value="30" step="1"></label>
+    </div>
+
+    <h3>Running it</h3>
+    <div class="grid">
+      <label>Utilities per site/cabin per month<input type="number" id="pUtil" value="40" step="5"></label>
+      <label>Booking fees (% of nightly income)<input type="number" id="pBook" value="6" step="1"></label>
+      <label>Staff / manager per month<input type="number" id="pStaff" value="6000" step="250"></label>
+      <label>Insurance per year<input type="number" id="pIns" value="9000" step="500"></label>
+      <label>Property tax per year<input type="number" id="pTax" value="6000" step="500"></label>
+      <label>Upkeep (% of income)<input type="number" id="pMaint" value="5" step="1"></label>
+      <label>Ads + listings per month<input type="number" id="pAds" value="500" step="50"></label>
+    </div>
+
+    <h3>Paying for it</h3>
+    <div class="grid">
+      <label>Loan (% of total cost)<input type="number" id="pLoanPct" value="70" step="5"></label>
+      <label>Loan rate %<input type="number" id="pLoanRate" value="8" step="0.25"></label>
+      <label>Loan years<input type="number" id="pLoanYrs" value="20" step="1"></label>
+      <label>Cap rate buyers pay (%)<input type="number" id="pCap" value="10" step="0.5"></label>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" aria-live="polite">
+      <div id="pVerdict" class="verdict"></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Total cost to build</div><div class="v" id="pTotal">–</div><div class="n" id="pTotalN"></div></div>
+        <div class="stat"><div class="k">Cash you put in</div><div class="v" id="pCash">–</div><div class="n" id="pCashN"></div></div>
+        <div class="stat"><div class="k">Profit per year</div><div class="v" id="pFlow">–</div><div class="n" id="pFlowN"></div></div>
+        <div class="stat"><div class="k">Yearly return on cash</div><div class="v" id="pCoc">–</div><div class="n">after loan payments</div></div>
+      </div>
+      <h3>Money in per year</h3>
+      <div class="chart" id="parkChart" style="height:200px"></div>
+      <details><summary>Show as a table</summary><div class="tablewrap"><table id="parkTable"></table></div></details>
+      <h3>The numbers</h3>
+      <table><tbody id="pRows"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Cabin vs. mobile home</h2>
+      <p class="sub">Cost spread over how long each one lasts. The mobile home numbers come from tab 1.</p>
+      <div class="tablewrap"><table id="cmpTable"></table></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- LOCATION SCORE -->
+<section data-panel="spot" class="hidden">
+<div class="card">
+  <h2>Will people stop here?</h2>
+  <p class="sub">Score a piece of land before you buy it. Look up traffic counts on your state DOT's traffic map, and check flood zones at <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener">FEMA's flood map</a>.</p>
+  <div class="grid" id="spotGrid"></div>
+  <div id="spotVerdict" class="verdict" style="margin-top:16px"></div>
+  <p class="note">What travelers want: easy in and out, pull-through sites at least 70 ft long for big rigs, 50-amp power, Wi-Fi that works, a clean bathhouse, a dog area, late self check-in, and good reviews on Google, Campendium and RV LIFE.</p>
+</div>
+</section>
+
 <!-- DEALS -->
 <section data-panel="deals" class="hidden">
 <div class="card">
@@ -246,6 +345,8 @@ footer{margin-top:28px;font-size:13px;color:var(--muted)}
   <ul class="check" id="chkPark"></ul>
   <h3>Check the home</h3>
   <ul class="check" id="chkHome"></ul>
+  <h3>RV + cabin park</h3>
+  <ul class="check" id="chkPark2"></ul>
   <h3>Scaling tips</h3>
   <ul class="check" id="chkScale"></ul>
 </div>
@@ -263,7 +364,7 @@ const store = {
   get(k, f){ try{ const v = localStorage.getItem("ps_"+k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
   set(k, v){ try{ localStorage.setItem("ps_"+k, JSON.stringify(v)); }catch(e){} }
 };
-const FIELDS = ["price","repairs","setup","closing","lot","utils","ins","tax","rent","vac","maint","mgmt","hold","endVal","sale","down","rate","years","dflt","keep","lotG","rentG","yrs","start","save","reinv","sYears"];
+const FIELDS = ["price","repairs","setup","closing","lot","utils","ins","tax","rent","vac","maint","mgmt","hold","endVal","sale","down","rate","years","dflt","keep","lotG","rentG","pLand","pSewer","pWater","pBath","pOffice","pPermit","pSign","pSiteCost","pRv","pRvRate","pRvOcc","pMo","pMoRate","pMoOcc","pCab","pCabShell","pCabFinish","pCabSite","pCabRate","pCabOcc","pStay","pClean","pCabLife","pUtil","pBook","pStaff","pIns","pTax","pMaint","pAds","pLoanPct","pLoanRate","pLoanYrs","pCap","yrs","start","save","reinv","sYears"];
 let mode = "rent";
 
 /* ---------- inputs ---------- */
@@ -358,7 +459,120 @@ function renderDeal(){
     ];
   }
   $("margins").innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td class="num">${v}</td></tr>`).join("");
-  renderStress(d); renderScale(d, r);
+  renderStress(d); renderScale(d, r); renderPark(d, r);
+}
+
+/* ---------- RV + cabin park ---------- */
+function renderPark(d, home){
+  const sites = d.pRv + d.pMo;
+  const shared = d.pLand + d.pSewer + d.pWater + d.pBath + d.pOffice + d.pPermit + d.pSign;
+  const cabEach = d.pCabShell + d.pCabFinish + d.pCabSite;
+  const total = shared + sites*d.pSiteCost + d.pCab*cabEach;
+  const revRv = d.pRv*d.pRvRate*d.pRvOcc/100*365;
+  const revMo = d.pMo*d.pMoRate*d.pMoOcc/100*12;
+  const revCab = d.pCab*d.pCabRate*d.pCabOcc/100*365;
+  const rev = revRv + revMo + revCab;
+  const stays = d.pCab*d.pCabOcc/100*365/Math.max(0.5, d.pStay);
+  const exp = {
+    "Utilities": (sites + d.pCab)*d.pUtil*12,
+    "Booking fees": (revRv + revCab)*d.pBook/100,
+    "Cabin cleaning": stays*d.pClean,
+    "Staff": d.pStaff*12,
+    "Insurance": d.pIns,
+    "Property tax": d.pTax,
+    "Upkeep": rev*d.pMaint/100,
+    "Ads + listings": d.pAds*12
+  };
+  const expTotal = Object.values(exp).reduce((a,b) => a+b, 0);
+  const noi = rev - expTotal;
+  const loan = total*Math.min(100, Math.max(0, d.pLoanPct))/100;
+  const debt = payment(loan, d.pLoanRate, d.pLoanYrs)*12;
+  const cash = total - loan;
+  const flow = noi - debt;
+  const coc = cash > 0 ? flow/cash*100 : Infinity;
+  const value = d.pCap > 0 ? noi/(d.pCap/100) : 0;
+
+  $("pTotal").textContent = money(total);
+  $("pTotalN").textContent = `land ${money(d.pLand)} + ${sites} sites + ${d.pCab} cabins + shared`;
+  $("pCash").textContent = money(cash);
+  $("pCashN").textContent = `loan ${money(loan)} at ${d.pLoanRate}%`;
+  $("pFlow").textContent = money(flow);
+  $("pFlowN").textContent = money(flow/12) + " a month after the loan";
+  $("pCoc").textContent = cash <= 0 ? "∞" : pct(coc);
+
+  const v = $("pVerdict");
+  const dscr = debt > 0 ? noi/debt : Infinity;
+  if (noi <= 0 || flow <= 0){ v.className = "verdict bad"; v.innerHTML = `<span aria-hidden="true">✕</span> Loses money <span class="why">· income doesn't cover costs${debt > 0 ? " and the loan" : ""}</span>`; }
+  else if (dscr < 1.25){ v.className = "verdict warn"; v.innerHTML = `<span aria-hidden="true">!</span> Tight <span class="why">· profit is only ${dscr.toFixed(2)}× the loan payment; banks usually want 1.25×</span>`; }
+  else if (coc >= 15 && value > total){ v.className = "verdict good"; v.innerHTML = `<span aria-hidden="true">✓</span> Strong plan <span class="why">· worth ${money(value - total)} more than it costs to build</span>`; }
+  else { v.className = "verdict warn"; v.innerHTML = `<span aria-hidden="true">!</span> OK plan <span class="why">· works, but look for cheaper land or a busier spot</span>`; }
+
+  const pts = [
+    {label:"RV overnight", short:"RV nightly", y:revRv, n:d.pRv},
+    {label:"RV monthly", short:"RV monthly", y:revMo, n:d.pMo},
+    {label:"Cabins", short:"Cabins", y:revCab, n:d.pCab}
+  ];
+  drawChart($("parkChart"), pts, "bar", x => x >= 1000 ? "$" + Math.round(x/1000) + "k" : money(x),
+    p => `<div>${p.label}</div><div><b>${money(p.y)}</b>/yr</div><div class="note">${p.n ? money(p.y/p.n) + " per unit" : ""}</div>`);
+  $("parkTable").innerHTML = `<tr><th>Income</th><th class="num">Units</th><th class="num">Per year</th><th class="num">Per unit</th></tr>` +
+    pts.map(p => `<tr><td>${p.label}</td><td class="num">${p.n}</td><td class="num">${money(p.y)}</td><td class="num">${p.n ? money(p.y/p.n) : "–"}</td></tr>`).join("");
+
+  $("pRows").innerHTML = [
+    ["Money in per year", money(rev)],
+    ...Object.entries(exp).map(([k,x]) => ["&nbsp;&nbsp;− " + k, money(x)]),
+    ["Profit before the loan (NOI)", money(noi)],
+    ["Loan payments per year", money(debt)],
+    ["Profit after the loan", money(flow)],
+    [`What it's worth at a ${d.pCap}% cap rate`, money(value)],
+    ["Value created (worth − cost)", money(value - total)]
+  ].map(([k,x]) => `<tr><td>${k}</td><td class="num">${x}</td></tr>`).join("");
+
+  const cabRevUnit = d.pCabRate*d.pCabOcc/100*365;
+  const cabCostsUnit = cabRevUnit*(d.pBook + d.pMaint)/100 + d.pUtil*12 + (d.pCabOcc/100*365/Math.max(0.5,d.pStay))*d.pClean;
+  const cabProfit = cabRevUnit - cabCostsUnit;
+  const mhLife = Math.max(1, Math.round(d.hold));
+  const mhProfit = rentFlow(d, d.rent, d.lot)*12;
+  const cabLife = Math.max(1, d.pCabLife);
+  const rows = [
+    ["Cost", money(cabEach), money(home.buy)],
+    ["Lasts", cabLife + " years", mhLife + " years"],
+    ["Cost per year it lasts", money(cabEach/cabLife), money(home.buy/mhLife)],
+    ["Profit per year (before shared park costs)", money(cabProfit), money(mhProfit)],
+    ["Pays itself back in", cabProfit > 0 ? (cabEach/cabProfit).toFixed(1) + " yr" : "Never", mhProfit > 0 ? (home.buy/mhProfit).toFixed(1) + " yr" : "Never"],
+    ["Profit over its life (flat, no increases)", money(cabProfit*cabLife - cabEach), money(mhProfit*mhLife + d.endVal - home.buy)],
+    ["Who owns the land", "You", "The park (you pay lot rent)"]
+  ];
+  $("cmpTable").innerHTML = `<tr><th></th><th class="num">Cabin</th><th class="num">Mobile home</th></tr>` +
+    rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("");
+}
+
+/* ---------- location score ---------- */
+const SPOT = [
+  {id:"exit", q:"Distance from a highway exit", o:[["Under 1 mile",15],["1–3 miles",8],["More than 3 miles",0]]},
+  {id:"aadt", q:"Cars per day on the road (DOT count)", o:[["Over 20,000",15],["8,000–20,000",10],["2,000–8,000",5],["Under 2,000",0]]},
+  {id:"draw", q:"Why travelers come by", o:[["Under 30 min from a beach, lake or big park",15],["About a day's drive from a big city, on the way somewhere",10],["Neither",0]]},
+  {id:"see", q:"Can people see it from the road (or a billboard spot)?", o:[["Yes",10],["No",0]]},
+  {id:"util", q:"Public water and sewer at the land", o:[["Both",15],["Water only",7],["Neither (well + septic)",0]]},
+  {id:"zone", q:"Zoning for an RV park + cabins", o:[["Allowed now",15],["Needs approval",5],["Not allowed",-100]]},
+  {id:"flood", q:"Flood zone", o:[["No",5],["Part of it",2],["Yes",0]]},
+  {id:"near", q:"Gas, food and a store within 5 miles", o:[["Yes",5],["No",0]]},
+  {id:"year", q:"Demand all year (work crews, snowbirds, events)", o:[["Strong",5],["Some",3],["None",0]]}
+];
+function renderSpot(){
+  const saved = store.get("spot", {});
+  $("spotGrid").innerHTML = SPOT.map(f => `<label>${f.q}<select data-spot="${f.id}">${f.o.map(([t],i) => `<option value="${i}" ${String(saved[f.id] ?? 0) === String(i) ? "selected" : ""}>${t}</option>`).join("")}</select></label>`).join("");
+  scoreSpot();
+}
+function scoreSpot(){
+  const pick = {};
+  let score = 0;
+  document.querySelectorAll("[data-spot]").forEach(el => { pick[el.dataset.spot] = el.value; score += SPOT.find(f => f.id === el.dataset.spot).o[+el.value][1]; });
+  store.set("spot", pick);
+  const v = $("spotVerdict");
+  if (score < 0){ v.className = "verdict bad"; v.innerHTML = `<span aria-hidden="true">✕</span> Pass <span class="why">· zoning doesn't allow it</span>`; return; }
+  if (score >= 75){ v.className = "verdict good"; v.innerHTML = `<span aria-hidden="true">✓</span> ${score}/100 · Strong spot <span class="why">· worth getting quotes and talking to the county</span>`; }
+  else if (score >= 50){ v.className = "verdict warn"; v.innerHTML = `<span aria-hidden="true">!</span> ${score}/100 · Maybe <span class="why">· only if the land is cheap enough to make up for it</span>`; }
+  else { v.className = "verdict bad"; v.innerHTML = `<span aria-hidden="true">✕</span> ${score}/100 · Pass <span class="why">· too few people will stop</span>`; }
 }
 function setMode(m){
   mode = m;
@@ -518,6 +732,15 @@ const CHECKS = {
     "Insurance quote for this home before closing.",
     "Comparable rents near campus (Zillow, Facebook Marketplace, the university housing board)."
   ],
+  chkPark2: [
+    "County / city: is an RV park with cabins allowed on this land? Get it in writing before you close.",
+    "Health department: RV park permit rules (sites per acre, bathhouse, water testing).",
+    "Septic perc test or sewer tap cost. This is often the biggest surprise.",
+    "Power company: cost to bring enough power for 50-amp sites.",
+    "Cabins: they're lodging, so check building code, inspections and fire rules for each one.",
+    "Booking software (Campspot, Firefly) and listings on Google, Campendium, Hipcamp, Good Sam.",
+    "Check nearby parks: their rates, how full they are, their reviews."
+  ],
   chkScale: [
     "Form an LLC and get a separate bank account before home #2.",
     "Stick to 2–3 parks where the manager likes you; more homes in fewer places = less driving.",
@@ -575,11 +798,12 @@ $("importJson").addEventListener("change", async e => {
   e.target.value = "";
 });
 document.addEventListener("change", e => {
+  if (e.target.matches("[data-spot]")) scoreSpot();
   if (e.target.matches("ul.check input")){ const t = store.get("checks", {}); t[e.target.id] = e.target.checked; store.set("checks", t); }
 });
 let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderDeal, 150); });
 
-restore(); renderChecks();
+restore(); renderChecks(); renderSpot();
 const startTab = store.get("tab", "deal");
 document.querySelector(`nav [data-tab="${startTab}"]`)?.click() || renderDeal();
 </script>
