@@ -560,15 +560,20 @@ const SPOT = [
 ];
 function renderSpot(){
   const saved = store.get("spot", {});
-  $("spotGrid").innerHTML = SPOT.map(f => `<label>${f.q}<select data-spot="${f.id}">${f.o.map(([t],i) => `<option value="${i}" ${String(saved[f.id] ?? 0) === String(i) ? "selected" : ""}>${t}</option>`).join("")}</select></label>`).join("");
+  $("spotGrid").innerHTML = SPOT.map(f => `<label>${f.q}<select data-spot="${f.id}"><option value="">Choose…</option>${f.o.map(([t],i) => `<option value="${i}" ${String(saved[f.id] ?? "") === String(i) ? "selected" : ""}>${t}</option>`).join("")}</select></label>`).join("");
   scoreSpot();
 }
 function scoreSpot(){
   const pick = {};
-  let score = 0;
-  document.querySelectorAll("[data-spot]").forEach(el => { pick[el.dataset.spot] = el.value; score += SPOT.find(f => f.id === el.dataset.spot).o[+el.value][1]; });
+  let score = 0, left = 0;
+  document.querySelectorAll("[data-spot]").forEach(el => {
+    pick[el.dataset.spot] = el.value;
+    if (el.value === "") { left++; return; }
+    score += SPOT.find(f => f.id === el.dataset.spot).o[+el.value][1];
+  });
   store.set("spot", pick);
   const v = $("spotVerdict");
+  if (pick.zone !== "2" && left){ v.className = "verdict warn"; v.innerHTML = `<span aria-hidden="true">…</span> ${left} question${left > 1 ? "s" : ""} left <span class="why">· ${score} points so far</span>`; return; }
   if (score < 0){ v.className = "verdict bad"; v.innerHTML = `<span aria-hidden="true">✕</span> Pass <span class="why">· zoning doesn't allow it</span>`; return; }
   if (score >= 75){ v.className = "verdict good"; v.innerHTML = `<span aria-hidden="true">✓</span> ${score}/100 · Strong spot <span class="why">· worth getting quotes and talking to the county</span>`; }
   else if (score >= 50){ v.className = "verdict warn"; v.innerHTML = `<span aria-hidden="true">!</span> ${score}/100 · Maybe <span class="why">· only if the land is cheap enough to make up for it</span>`; }
