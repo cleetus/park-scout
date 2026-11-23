@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Park Scout</title>
+<meta name="description" content="Run the numbers on buying used mobile homes, renting the lot in someone else's park, and renting or owner-financing the home.">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f4f3ef; --card:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#7c7b76;
+  --line:#e2e0d9; --grid:#ebe9e3; --accent:#2a78d6; --accent-ink:#fff;
+  --series:#2a78d6; --input:#fff;
+  --good:#0a7a33; --good-bg:#e3f3e8; --warn:#8a5a00; --warn-bg:#fbf0d9;
+  --bad:#b42323; --bad-bg:#fbe5e4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#121211; --card:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#8f8e86;
+    --line:#2e2e2b; --grid:#262624; --accent:#3987e5; --accent-ink:#fff;
+    --series:#3987e5; --input:#222220;
+    --good:#4cc46f; --good-bg:#16301f; --warn:#e0a83a; --warn-bg:#33280f;
+    --bad:#ef7070; --bad-bg:#3a1a1a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#121211; --card:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#8f8e86;
+  --line:#2e2e2b; --grid:#262624; --accent:#3987e5; --accent-ink:#fff;
+  --series:#3987e5; --input:#222220;
+  --good:#4cc46f; --good-bg:#16301f; --warn:#e0a83a; --warn-bg:#33280f;
+  --bad:#ef7070; --bad-bg:#3a1a1a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 60px}
+header h1{margin:0;font-size:26px;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--ink2)}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 16px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink2);padding:8px 14px;border-radius:999px;font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:18px}
+.card h3{margin:16px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.sub{color:var(--ink2);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 14px}
+label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--ink2)}
+input,select{font:inherit;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.seg button{border:0;background:transparent;color:var(--ink2);padding:8px 14px;font:inherit;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+.stat .n{font-size:12px;color:var(--ink2)}
+.verdict{display:flex;gap:8px;align-items:center;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-weight:600}
+.verdict.good{background:var(--good-bg);color:var(--good)}
+.verdict.warn{background:var(--warn-bg);color:var(--warn)}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict span.why{font-weight:400;color:var(--ink2)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.chart{position:relative;width:100%;height:240px}
+.chart svg{display:block;width:100%;height:100%}
+.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap;display:none;z-index:2}
+.tip b{font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500;font-size:12px}
+td.num,th.num{text-align:right}
+.tablewrap{overflow-x:auto}
+details summary{cursor:pointer;color:var(--ink2);font-size:13px;margin-top:8px}
+ul.check{list-style:none;padding:0;margin:0}
+ul.check li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+ul.check input{width:18px;height:18px;flex:none;margin-top:2px}
+.note{font-size:13px;color:var(--muted)}
+.hidden{display:none !important}
+footer{margin-top:28px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Park Scout</h1>
+  <p>Buy a used mobile home, rent the lot in someone else's park, then rent the home out or sell it on owner financing. Run the numbers before you buy.</p>
+</header>
+
+<nav role="tablist">
+  <button role="tab" data-tab="deal" aria-selected="true">1. Deal</button>
+  <button role="tab" data-tab="stress" aria-selected="false">2. Lot-rent stress test</button>
+  <button role="tab" data-tab="scale" aria-selected="false">3. Scale plan</button>
+  <button role="tab" data-tab="deals" aria-selected="false">4. Saved deals</button>
+  <button role="tab" data-tab="check" aria-selected="false">5. Checklist</button>
+</nav>
+
+<!-- DEAL -->
+<section data-panel="deal">
+<div class="two">
+  <div class="card">
+    <h2>One home</h2>
+    <p class="sub">Enter the home you're looking at. Everything is monthly unless it says yearly.</p>
+    <div class="seg" role="group" aria-label="Exit plan">
+      <button data-mode="rent" aria-pressed="true">Rent it out</button>
+      <button data-mode="sell" aria-pressed="false">Sell on owner financing</button>
+    </div>
+
+    <h3>Buying it</h3>
+    <div class="grid">
+      <label>Home price<input type="number" id="price" value="15000" step="500"></label>
+      <label>Repairs<input type="number" id="repairs" value="5000" step="250"></label>
+      <label>Move + set-up (0 if it stays put)<input type="number" id="setup" value="0" step="250"></label>
+      <label>Title, closing, misc.<input type="number" id="closing" value="500" step="50"></label>
+    </div>
+
+    <div id="costFields">
+    <h3>Monthly costs you pay</h3>
+    <div class="grid">
+      <label>Lot rent to the park<input type="number" id="lot" value="400" step="10"></label>
+      <label>Utilities you cover (water, trash)<input type="number" id="utils" value="0" step="5"></label>
+      <label>Insurance<input type="number" id="ins" value="40" step="5"></label>
+      <label>Property tax (yearly)<input type="number" id="tax" value="300" step="25"></label>
+    </div>
+    </div>
+
+    <div id="rentFields">
+      <h3>Renting it</h3>
+      <div class="grid">
+        <label>Rent you charge<input type="number" id="rent" value="1100" step="25"></label>
+        <label>Vacancy (% of the year empty)<input type="number" id="vac" value="8" step="1"></label>
+        <label>Repairs set-aside (% of rent)<input type="number" id="maint" value="8" step="1"></label>
+        <label>Manager (% of rent, 0 if you do it)<input type="number" id="mgmt" value="0" step="1"></label>
+      </div>
+    </div>
+
+    <div id="sellFields" class="hidden">
+      <h3>Selling it on owner financing</h3>
+      <p class="note">The buyer owns the home, makes payments to you, and pays the lot rent and repairs. You hold the title until it's paid off. Check your state's rules (some treat this as a loan).</p>
+      <div class="grid">
+        <label>Sale price<input type="number" id="sale" value="32000" step="500"></label>
+        <label>Down payment<input type="number" id="down" value="2500" step="250"></label>
+        <label>Interest rate %<input type="number" id="rate" value="10" step="0.5"></label>
+        <label>Years<input type="number" id="years" value="5" step="1"></label>
+        <label>Missed-payment risk (%)<input type="number" id="dflt" value="10" step="1"></label>
+        <label>Costs you still pay per month<input type="number" id="keep" value="0" step="10"></label>
+      </div>
+      <p class="note">Usually the buyer pays lot rent, insurance and tax, so "costs you still pay" is $0.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" aria-live="polite">
+      <div id="verdict" class="verdict"></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Cash you put in</div><div class="v" id="sCash">–</div><div class="n" id="sCashN"></div></div>
+        <div class="stat"><div class="k">Profit per month</div><div class="v" id="sFlow">–</div><div class="n" id="sFlowN"></div></div>
+        <div class="stat"><div class="k">Yearly return on cash</div><div class="v" id="sCoc">–</div><div class="n">profit per year ÷ cash in</div></div>
+        <div class="stat"><div class="k">Cash back in</div><div class="v" id="sPay">–</div><div class="n">time to earn your money back</div></div>
+      </div>
+      <h3>Safety margins</h3>
+      <table><tbody id="margins"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Save this deal</h2>
+      <div class="grid">
+        <label>Name<input id="dName" placeholder="Lot 14, 3 bed"></label>
+        <label>Park / town<input id="dPark" placeholder="Pine Grove, Troy"></label>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="saveDeal">Save deal</button><span class="note" id="saveMsg"></span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- STRESS -->
+<section data-panel="stress" class="hidden">
+<div class="card">
+  <h2>What if the park raises lot rent?</h2>
+  <p class="sub">This is the biggest risk of renting someone else's lot. Big park companies often raise lot rent 5–10% a year after they buy a park. Uses the "Rent it out" numbers from tab 1.</p>
+  <div class="grid">
+    <label>Lot rent goes up (% per year)<input type="number" id="lotG" value="7" step="1"></label>
+    <label>Your rent goes up (% per year)<input type="number" id="rentG" value="3" step="1"></label>
+    <label>Years to look ahead<input type="number" id="yrs" value="10" step="1" min="2" max="30"></label>
+  </div>
+  <div id="stressVerdict" class="verdict" style="margin-top:14px"></div>
+  <h3>Profit per year</h3>
+  <div class="chart" id="stressChart"></div>
+  <details><summary>Show as a table</summary><div class="tablewrap"><table id="stressTable"></table></div></details>
+</div>
+</section>
+
+<!-- SCALE -->
+<section data-panel="scale" class="hidden">
+<div class="card">
+  <h2>How fast can this grow?</h2>
+  <p class="sub">Starts with your cash, buys a home each time there's enough, and puts the profit back into more homes. Uses the cash-in and profit per home from tab 1.</p>
+  <div class="grid">
+    <label>Starting cash<input type="number" id="start" value="25000" step="1000"></label>
+    <label>Extra savings added per month<input type="number" id="save" value="500" step="100"></label>
+    <label>Share of profit reinvested (%)<input type="number" id="reinv" value="100" step="10"></label>
+    <label>Years<input type="number" id="sYears" value="10" step="1" min="1" max="30"></label>
+  </div>
+  <div class="stats" style="margin-top:14px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+    <div class="stat"><div class="k">Homes at the end</div><div class="v" id="gHomes">–</div></div>
+    <div class="stat"><div class="k">Profit per month at the end</div><div class="v" id="gFlow">–</div></div>
+    <div class="stat"><div class="k">First home bought</div><div class="v" id="gFirst">–</div></div>
+  </div>
+  <h3>Homes owned at the end of each year</h3>
+  <div class="chart" id="scaleChart"></div>
+  <details><summary>Show as a table</summary><div class="tablewrap"><table id="scaleTable"></table></div></details>
+  <p class="note" id="scaleNote"></p>
+</div>
+</section>
+
+<!-- DEALS -->
+<section data-panel="deals" class="hidden">
+<div class="card">
+  <h2>Saved deals</h2>
+  <p class="sub">Saved in this browser only. Use Export to keep a copy or move it to another device.</p>
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn ghost" id="exportCsv">Export CSV</button>
+    <button class="btn ghost" id="exportJson">Export backup</button>
+    <label style="flex-direction:row;align-items:center;gap:6px" class="btn ghost">Import backup<input type="file" id="importJson" accept=".json" class="hidden"></label>
+  </div>
+  <div class="tablewrap"><table id="dealTable"></table></div>
+</div>
+</section>
+
+<!-- CHECKLIST -->
+<section data-panel="check" class="hidden">
+<div class="card">
+  <h2>Before you buy</h2>
+  <p class="sub">Ask the park and check the home. Ticks are saved in this browser.</p>
+  <h3>Ask the park manager</h3>
+  <ul class="check" id="chkPark"></ul>
+  <h3>Check the home</h3>
+  <ul class="check" id="chkHome"></ul>
+  <h3>Scaling tips</h3>
+  <ul class="check" id="chkScale"></ul>
+</div>
+</section>
+
+<footer>For planning only, not financial or legal advice. Have a local attorney and CPA review real deals. Source: <a href="https://github.com/cleetus/park-scout">github.com/cleetus/park-scout</a></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const money = (n, d=0) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
+const pct = n => (isFinite(n) ? n.toFixed(1) + "%" : "–");
+const store = {
+  get(k, f){ try{ const v = localStorage.getItem("ps_"+k); return v ? JSON.parse(v) : f; }catch(e){ return f; } },
+  set(k, v){ try{ localStorage.setItem("ps_"+k, JSON.stringify(v)); }catch(e){} }
+};
+const FIELDS = ["price","repairs","setup","closing","lot","utils","ins","tax","rent","vac","maint","mgmt","sale","down","rate","years","dflt","keep","lotG","rentG","yrs","start","save","reinv","sYears"];
+let mode = "rent";
+
+/* ---------- inputs ---------- */
+function readInputs(){
+  const d = {};
+  FIELDS.forEach(f => { d[f] = parseFloat($(f).value) || 0; });
+  return d;
+}
+function restore(){
+  const saved = store.get("inputs", null);
+  if (saved){ FIELDS.forEach(f => { if (saved[f] !== undefined) $(f).value = saved[f]; }); }
+  setMode(store.get("mode","rent"));
+}
+
+/* ---------- math ---------- */
+function payment(loan, ratePct, years){
+  const n = Math.max(1, Math.round(years*12)), r = ratePct/100/12;
+  if (loan <= 0) return 0;
+  return r === 0 ? loan/n : loan*r/(1-Math.pow(1+r,-n));
+}
+function rentFlow(d, rent, lot){
+  const income = rent*(1 - d.vac/100);
+  const costs = lot + d.utils + d.ins + d.tax/12 + rent*(d.maint + d.mgmt)/100;
+  return income - costs;
+}
+function calcDeal(d){
+  const buy = d.price + d.repairs + d.setup + d.closing;
+  const fixedYours = d.utils + d.ins + d.tax/12; // excluding lot rent
+  if (mode === "rent"){
+    const flow = rentFlow(d, d.rent, d.lot);
+    const varPct = (d.vac + d.maint + d.mgmt)/100;
+    const breakEvenRent = (d.lot + fixedYours) / Math.max(0.01, 1 - varPct);
+    return { buy, cash: buy, flow, breakEvenRent, maxLot: d.lot + flow, mode };
+  } else {
+    const pmt = payment(d.sale - d.down, d.rate, d.years);
+    const flow = pmt*(1 - d.dflt/100) - d.keep;
+    const cash = buy - d.down;
+    const total = pmt*Math.round(d.years*12) + d.down;
+    return { buy, cash, flow, pmt, total, profit: total - buy, mode };
+  }
+}
+function verdictFor(r){
+  const coc = r.cash > 0 ? r.flow*12/r.cash*100 : Infinity;
+  if (r.flow <= 0) return {cls:"bad", icon:"✕", text:"Loses money", why:"costs are higher than what comes in"};
+  if (r.cash <= 0) return {cls:"good", icon:"✓", text:"Strong", why:"the down payment covers your whole cost"};
+  if (coc >= 25) return {cls:"good", icon:"✓", text:"Strong deal", why:"25%+ a year on your cash"};
+  if (coc >= 12) return {cls:"warn", icon:"!", text:"OK deal", why:"12–25% a year; try to buy cheaper or raise rent"};
+  return {cls:"bad", icon:"✕", text:"Weak deal", why:"under 12% a year; not worth the risk"};
+}
+
+/* ---------- deal tab ---------- */
+function renderDeal(){
+  const d = readInputs(); store.set("inputs", d); store.set("mode", mode);
+  const r = calcDeal(d);
+  const v = verdictFor(r);
+  $("verdict").className = "verdict " + v.cls;
+  $("verdict").innerHTML = `<span aria-hidden="true">${v.icon}</span> ${v.text} <span class="why">· ${v.why}</span>`;
+  $("sCash").textContent = money(r.cash);
+  $("sCashN").textContent = mode === "sell" ? `${money(r.buy)} cost − ${money(d.down)} down` : "price + repairs + set-up + closing";
+  $("sFlow").textContent = money(r.flow);
+  $("sFlowN").textContent = money(r.flow*12) + " a year";
+  const coc = r.cash > 0 ? r.flow*12/r.cash*100 : Infinity;
+  $("sCoc").textContent = r.cash <= 0 ? "∞" : pct(coc);
+  $("sPay").textContent = r.cash <= 0 ? "Day 1" : r.flow > 0 ? (r.cash/r.flow < 24 ? Math.ceil(r.cash/r.flow) + " mo" : (r.cash/r.flow/12).toFixed(1) + " yr") : "Never";
+  let rows;
+  if (mode === "rent"){
+    rows = [
+      ["Lowest rent that still breaks even", money(r.breakEvenRent)],
+      ["Highest lot rent you can survive", money(r.maxLot)],
+      ["Lot rent as % of your rent", pct(d.lot/Math.max(1,d.rent)*100) + (d.lot/Math.max(1,d.rent) > 0.45 ? "  (high)" : "")]
+    ];
+  } else {
+    rows = [
+      ["Buyer's monthly payment", money(r.pmt)],
+      ["Buyer's total each month (payment + lot rent " + money(d.lot) + ")", money(r.pmt + d.lot)],
+      ["Total you collect if paid off", money(r.total)],
+      ["Total profit if paid off", money(r.profit)]
+    ];
+  }
+  $("margins").innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td class="num">${v}</td></tr>`).join("");
+  renderStress(d); renderScale(d, r);
+}
+function setMode(m){
+  mode = m;
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
+  $("rentFields").classList.toggle("hidden", m !== "rent");
+  $("sellFields").classList.toggle("hidden", m !== "sell");
+  $("costFields").classList.toggle("hidden", m !== "rent");
+}
+
+/* ---------- stress tab ---------- */
+function renderStress(d){
+  const n = Math.min(30, Math.max(2, Math.round(d.yrs)));
+  const pts = [];
+  let negYear = null;
+  for (let y = 1; y <= n; y++){
+    const rent = d.rent*Math.pow(1 + d.rentG/100, y-1);
+    const lot = d.lot*Math.pow(1 + d.lotG/100, y-1);
+    const flow = rentFlow(d, rent, lot)*12;
+    if (flow <= 0 && negYear === null) negYear = y;
+    pts.push({label:"Year " + y, short:"Y" + y, y:flow, rent, lot});
+  }
+  const sv = $("stressVerdict");
+  if (negYear === 1){ sv.className = "verdict bad"; sv.innerHTML = `<span aria-hidden="true">✕</span> Loses money from year 1.`; }
+  else if (negYear){ sv.className = "verdict bad"; sv.innerHTML = `<span aria-hidden="true">✕</span> Profit runs out in year ${negYear}. <span class="why">· raise rent faster, get a lot-rent cap in writing, or plan to sell the home before then</span>`; }
+  else {
+    const drop = (1 - pts[n-1].y/pts[0].y)*100;
+    sv.className = drop > 40 ? "verdict warn" : "verdict good";
+    sv.innerHTML = drop > 0
+      ? `<span aria-hidden="true">${drop > 40 ? "!" : "✓"}</span> Still profitable after ${n} years. <span class="why">· profit shrinks ${drop.toFixed(0)}% by year ${n}</span>`
+      : `<span aria-hidden="true">✓</span> Still profitable after ${n} years. <span class="why">· profit grows over time</span>`;
+  }
+  drawChart($("stressChart"), pts, "line", v => money(v), p => `<div>${p.label}</div><div>Profit <b>${money(p.y)}</b>/yr</div><div class="note">Rent ${money(p.rent)} · lot ${money(p.lot)}</div>`);
+  $("stressTable").innerHTML = `<tr><th>Year</th><th class="num">Your rent</th><th class="num">Lot rent</th><th class="num">Profit per year</th></tr>` +
+    pts.map(p => `<tr><td>${p.label}</td><td class="num">${money(p.rent)}</td><td class="num">${money(p.lot)}</td><td class="num">${money(p.y)}</td></tr>`).join("");
+}
+
+/* ---------- scale tab ---------- */
+function renderScale(d, r){
+  const years = Math.min(30, Math.max(1, Math.round(d.sYears)));
+  const cost = r.cash, flow = r.flow;
+  let pool = d.start, homes = 0, first = null;
+  const pts = [];
+  const canBuy = cost > 0 && flow > 0;
+  for (let m = 1; m <= years*12; m++){
+    if (canBuy){ while (pool >= cost){ pool -= cost; homes++; if (first === null) first = m; } }
+    pool += homes*flow*d.reinv/100 + d.save;
+    if (m % 12 === 0) pts.push({label:"Year " + (m/12), short:"Y" + (m/12), y:homes, flow:homes*flow, pool});
+  }
+  if (!canBuy){
+    $("gHomes").textContent = "–"; $("gFlow").textContent = "–"; $("gFirst").textContent = "–";
+    $("scaleNote").textContent = cost <= 0 ? "Each home pays for itself up front, so growth is only limited by finding deals." : "This deal loses money, so it can't grow. Fix the numbers on tab 1 first.";
+    $("scaleChart").innerHTML = ""; $("scaleTable").innerHTML = ""; return;
+  }
+  $("gHomes").textContent = homes;
+  $("gFlow").textContent = money(homes*flow);
+  $("gFirst").textContent = first ? (first <= 1 ? "Month 1" : "Month " + first) : "Not yet";
+  $("scaleNote").textContent = `Assumes every home costs ${money(cost)} and makes ${money(flow)}/month, with no loans. In real life you'll run out of good deals in one park, so spread across a few parks and towns.` + (mode === "sell" ? " In owner-finance mode payments stop when a home is paid off, so long-term income here is too high." : "");
+  drawChart($("scaleChart"), pts, "bar", v => Math.round(v).toString(), p => `<div>${p.label}</div><div><b>${p.y}</b> homes</div><div class="note">${money(p.flow)}/mo profit</div>`);
+  $("scaleTable").innerHTML = `<tr><th>Year</th><th class="num">Homes</th><th class="num">Profit per month</th><th class="num">Cash waiting</th></tr>` +
+    pts.map(p => `<tr><td>${p.label}</td><td class="num">${p.y}</td><td class="num">${money(p.flow)}</td><td class="num">${money(p.pool)}</td></tr>`).join("");
+}
+
+/* ---------- chart ---------- */
+function niceTicks(min, max, count=4){
+  if (min === max){ max = min + 1; }
+  const span = max - min, step0 = span/count, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(s => s*mag).find(s => s >= step0);
+  const lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step, out = [];
+  for (let v = lo; v <= hi + step/2; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+function drawChart(el, pts, type, fmt, tipHtml){
+  const W = el.clientWidth || 600, H = el.clientHeight || 240;
+  const pad = {l:62, r:12, t:12, b:28};
+  const ys = pts.map(p => p.y);
+  const ticks = niceTicks(Math.min(0, ...ys), Math.max(0, ...ys));
+  const yMin = ticks[0], yMax = ticks[ticks.length-1];
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b, band = iw/pts.length;
+  const X = i => pad.l + band*i + band/2, Y = v => pad.t + ih - (v - yMin)/(yMax - yMin)*ih;
+  const every = Math.ceil(pts.length / Math.max(1, Math.floor(iw/48)));
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="chart">`;
+  ticks.forEach(t => {
+    s += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="${t===0?'var(--muted)':'var(--grid)'}" stroke-width="1"/>`;
+    s += `<text x="${pad.l-8}" y="${Y(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t)}</text>`;
+  });
+  pts.forEach((p,i) => { if (i % every === 0 || i === pts.length-1) s += `<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)">${p.short}</text>`; });
+  if (type === "bar"){
+    const bw = Math.min(28, band*0.6), y0 = Y(0);
+    pts.forEach((p,i) => {
+      if (p.y === 0) return;
+      const x = X(i) - bw/2, y = Y(p.y), h = y0 - y, r = Math.min(4, h, bw/2);
+      s += `<path d="M${x},${y0} V${y+r} Q${x},${y} ${x+r},${y} H${x+bw-r} Q${x+bw},${y} ${x+bw},${y+r} V${y0} Z" fill="var(--series)"/>`;
+    });
+  } else {
+    s += `<polyline fill="none" stroke="var(--series)" stroke-width="2" stroke-linejoin="round" points="${pts.map((p,i)=>X(i)+","+Y(p.y)).join(" ")}"/>`;
+    pts.forEach((p,i) => { s += `<circle cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="var(--series)" stroke="var(--card)" stroke-width="2"/>`; });
+  }
+  s += `<line id="xh" x1="0" x2="0" y1="${pad.t}" y2="${pad.t+ih}" stroke="var(--muted)" stroke-dasharray="3 3" visibility="hidden"/>`;
+  pts.forEach((p,i) => { s += `<rect data-i="${i}" x="${pad.l+band*i}" y="${pad.t}" width="${band}" height="${ih}" fill="transparent"/>`; });
+  s += `</svg>`;
+  el.innerHTML = s;
+  const tip = $("tip"), xh = el.querySelector("#xh");
+  el.querySelectorAll("rect[data-i]").forEach(rc => {
+    const show = ev => {
+      const i = +rc.dataset.i, p = pts[i];
+      tip.innerHTML = tipHtml(p); tip.style.display = "block";
+      const box = el.getBoundingClientRect();
+      const px = box.left + window.scrollX + X(i)*box.width/W, py = box.top + window.scrollY + Y(p.y)*box.height/H;
+      const tw = tip.offsetWidth;
+      let left = px + 12; if (left + tw > window.scrollX + document.documentElement.clientWidth - 8) left = px - tw - 12;
+      tip.style.left = left + "px"; tip.style.top = (py - 20) + "px";
+      if (type === "line"){ xh.setAttribute("x1", X(i)); xh.setAttribute("x2", X(i)); xh.setAttribute("visibility","visible"); }
+    };
+    rc.addEventListener("mousemove", show); rc.addEventListener("touchstart", show, {passive:true});
+    rc.addEventListener("mouseleave", () => { tip.style.display = "none"; xh.setAttribute("visibility","hidden"); });
+  });
+}
+
+/* ---------- saved deals ---------- */
+function deals(){ return store.get("deals", []); }
+function renderDeals(){
+  const list = deals();
+  if (!list.length){ $("dealTable").innerHTML = `<tr><td class="note">No saved deals yet. Fill in tab 1 and press "Save deal".</td></tr>`; return; }
+  $("dealTable").innerHTML = `<tr><th>Deal</th><th>Park / town</th><th>Plan</th><th class="num">Cash in</th><th class="num">Profit/mo</th><th class="num">Return</th><th></th></tr>` +
+    list.map((x,i) => `<tr><td>${esc(x.name)}</td><td>${esc(x.park)}</td><td>${x.mode === "sell" ? "Owner finance" : "Rent"}</td><td class="num">${money(x.cash)}</td><td class="num">${money(x.flow)}</td><td class="num">${x.cash > 0 ? pct(x.flow*12/x.cash*100) : "∞"}</td>
+      <td class="num"><button class="btn ghost" data-load="${i}">Open</button> <button class="btn ghost" data-del="${i}">Delete</button></td></tr>`).join("");
+}
+function esc(s){ return String(s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function download(name, text, type){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ---------- checklist ---------- */
+const CHECKS = {
+  chkPark: [
+    "Does the park allow investors to own homes and rent them out? Get it in writing.",
+    "Will I get a written lot lease? How long, and is there a cap on lot-rent increases?",
+    "What was the lot rent each of the last 5 years?",
+    "Who owns the park? Is it for sale? (A big company buying it usually means fast rent hikes.)",
+    "Does the park screen and approve my tenants? How long does it take, and what does it cost?",
+    "Rules on home age, skirting, sheds, pets, number of people, parking?",
+    "Who pays water, sewer, trash? Are they metered per home?",
+    "Can a home be sold and stay on the lot? Any fee when it changes hands?",
+    "Does the park have empty or abandoned homes it wants gone? (Often cheap or free.)"
+  ],
+  chkHome: [
+    "Title is clean: seller's name, no liens, taxes paid (check with the county or state).",
+    "HUD tag / data plate shows 1976 or newer.",
+    "Floors: no soft spots (bathroom, kitchen, by doors).",
+    "Roof: no leaks or stains on the ceiling.",
+    "Plumbing: no leaks under sinks; check under the home (belly wrap, pipes).",
+    "Heat/AC and water heater work; electric panel looks safe.",
+    "Tie-downs and piers are in place; doors and windows close square (the home is level).",
+    "Insurance quote for this home before closing.",
+    "Comparable rents near campus (Zillow, Facebook Marketplace, the university housing board)."
+  ],
+  chkScale: [
+    "Form an LLC and get a separate bank account before home #2.",
+    "Stick to 2–3 parks where the manager likes you; more homes in fewer places = less driving.",
+    "Use the same paint, flooring and fixtures in every home so repairs are fast and cheap.",
+    "Ask park managers to call you first about homes for sale or abandoned homes.",
+    "Use a standard lease plus a parent co-signer for student renters.",
+    "Mix in owner-finance sales to free up your time and get your cash back sooner.",
+    "Hire a part-time handyman or property manager once you have about 8–10 homes."
+  ]
+};
+function renderChecks(){
+  const ticked = store.get("checks", {});
+  Object.entries(CHECKS).forEach(([id, items]) => {
+    $(id).innerHTML = items.map((t,i) => { const k = id+i; return `<li><input type="checkbox" id="${k}" ${ticked[k]?"checked":""}><label for="${k}" style="display:block;font-size:14px;color:var(--ink)">${t}</label></li>`; }).join("");
+  });
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll("nav [data-tab]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("nav [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
+  document.querySelectorAll("[data-panel]").forEach(p => p.classList.toggle("hidden", p.dataset.panel !== b.dataset.tab));
+  store.set("tab", b.dataset.tab);
+  if (b.dataset.tab === "deals") renderDeals();
+  renderDeal();
+}));
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => { setMode(b.dataset.mode); renderDeal(); }));
+FIELDS.forEach(f => $(f).addEventListener("input", renderDeal));
+$("saveDeal").addEventListener("click", () => {
+  const d = readInputs(), r = calcDeal(d), list = deals();
+  list.push({ name: $("dName").value || "Deal " + (list.length+1), park: $("dPark").value, mode, inputs: d, cash: r.cash, flow: r.flow, saved: new Date().toISOString().slice(0,10) });
+  store.set("deals", list);
+  $("saveMsg").textContent = "Saved. See tab 4.";
+  setTimeout(() => $("saveMsg").textContent = "", 2500);
+});
+$("dealTable").addEventListener("click", e => {
+  const list = deals();
+  if (e.target.dataset.del !== undefined){ list.splice(+e.target.dataset.del, 1); store.set("deals", list); renderDeals(); }
+  if (e.target.dataset.load !== undefined){
+    const x = list[+e.target.dataset.load];
+    FIELDS.forEach(f => { if (x.inputs[f] !== undefined) $(f).value = x.inputs[f]; });
+    setMode(x.mode); $("dName").value = x.name; $("dPark").value = x.park;
+    document.querySelector('nav [data-tab="deal"]').click();
+  }
+});
+$("exportCsv").addEventListener("click", () => {
+  const head = ["name","park","plan","saved","cash_in","profit_per_month","yearly_return_pct", ...FIELDS];
+  const rows = deals().map(x => [x.name, x.park, x.mode, x.saved, x.cash.toFixed(0), x.flow.toFixed(0), x.cash > 0 ? (x.flow*12/x.cash*100).toFixed(1) : "", ...FIELDS.map(f => x.inputs[f])]);
+  download("park-scout-deals.csv", [head, ...rows].map(r => r.map(c => `"${String(c ?? "").replace(/"/g,'""')}"`).join(",")).join("\n"), "text/csv");
+});
+$("exportJson").addEventListener("click", () => download("park-scout-backup.json", JSON.stringify({deals: deals(), checks: store.get("checks",{})}, null, 2), "application/json"));
+$("importJson").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const data = JSON.parse(await f.text()); if (Array.isArray(data.deals)) store.set("deals", data.deals); if (data.checks) store.set("checks", data.checks); renderDeals(); renderChecks(); }
+  catch(err){ $("dealTable").insertAdjacentHTML("beforebegin", `<p class="note">That file couldn't be read.</p>`); }
+  e.target.value = "";
+});
+document.addEventListener("change", e => {
+  if (e.target.matches("ul.check input")){ const t = store.get("checks", {}); t[e.target.id] = e.target.checked; store.set("checks", t); }
+});
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderDeal, 150); });
+
+restore(); renderChecks();
+const startTab = store.get("tab", "deal");
+document.querySelector(`nav [data-tab="${startTab}"]`)?.click() || renderDeal();
+</script>
+</body>
+</html>
